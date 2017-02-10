@@ -2,10 +2,10 @@ package envparse
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"os"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // ParseFile parses an Environment file and sets env variables
@@ -13,7 +13,7 @@ func ParseFile(filePath string) error {
 	// read configuration file
 	file, err := os.Open(filePath)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	defer file.Close()
 
@@ -41,10 +41,10 @@ func Parse(sc *bufio.Scanner) error {
 		sp := strings.Split(line, "=")
 		// decline lines which are in the wrong format
 		if len(sp) < 2 {
-			return errors.Errorf("Line %d isn't in the correct format. Expected 'KEY=value', Got '%s'", lineNo, line)
+			return fmt.Errorf("Line %d isn't in the correct format. Expected 'KEY=value', Got '%s'", lineNo, line)
 		}
 		if err := os.Setenv(sp[0], strings.Join(sp[1:], "=")); err != nil {
-			return errors.Wrapf(err, "setting line %d of config file to env", lineNo)
+			return fmt.Errorf("setting line %d of config file to env: %s", lineNo, err)
 		}
 	}
 
